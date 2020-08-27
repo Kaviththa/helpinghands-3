@@ -1,85 +1,43 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Document;
+use App\User;
+
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
+    public function index (Request $request) {
+        $data = Document::where('user_id',Auth::user()->id)
+                        ->orderBy('id','DESC')
+                        ->get();
+        return view('backend.receiver.index',compact('data'))
+            ->with('i', ($request->input('page', 1) -1) * 5);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view ('backend.receiver.create');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
-    }
+        $this->validate($request, [
+            'proof' => 'required',
+            'video' => 'required'
+        ]);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Document  $document
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Document $document)
-    {
-        //
-    }
+        $link = $request->file('link');
+        $linkSaveAsName = time() . "-link." . $link->getClientOriginalExtension();
+ 
+        $link_upload_path = 'document/';
+        $link_url = $link_upload_path . $linkSaveAsName;
+        $success = $link->move($link_upload_path, $linkSaveAsName);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Document  $document
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Document $document)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Document  $document
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Document $document)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Document  $document
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Document $document)
-    {
-        //
+        $input = $request->all();
+        $input['user_id'] = Auth::user()->id;
+        $input['link'] = $link_url;
+        return redirect()->route('receiver.index')
+                        ->with('success', 'Details updated Successfully');
     }
 }

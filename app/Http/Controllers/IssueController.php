@@ -2,84 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Issue;
 use Illuminate\Http\Request;
+use App\Issue;
 
 class IssueController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
-    }
+        $data = Issue::where('user_id',Auth::user()->id)
+                    ->orderBy('id','DESC')
+                    ->get();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return view('backend.receiver.index',compact('data'))
+                ->with('i', ($request->input('page', 1) -1) * 5);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function create(Reques $request)
     {
-        //
-    }
+        $this->validate($request, [
+            'type' => 'required',
+            'reason' => 'required',
+            'category_of_help' => 'required'
+        ]);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Issue  $issue
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Issue $issue)
-    {
-        //
-    }
+        $input = $request->all();
+        $input['user_id'] = Auth::user()->id;
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Issue  $issue
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Issue $issue)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Issue  $issue
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Issue $issue)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Issue  $issue
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Issue $issue)
-    {
-        //
+        return redirect()->route('receiver.index')
+                        ->with('success', 'Updated Successfully');
     }
 }
